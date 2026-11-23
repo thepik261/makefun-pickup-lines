@@ -12,7 +12,12 @@ if (!LINE.trim() || LINE.length > 200) {
   throw new Error(`pickup line must be 1-200 characters, got ${LINE.length}`);
 }
 
-mkdirSync("/output", { recursive: true, mode: 0o755 });
+mkdirSync("/output", { recursive: true });
 writeFileSync("/output/entry.txt", LINE, { encoding: "utf8", mode: 0o644 });
-chmodSync("/output", 0o755);
-chmodSync("/output/entry.txt", 0o644);
+// Best effort only: the grader runs as an unprivileged user that may not
+// own /output, so a chmod there must never fail the run.
+try {
+  chmodSync("/output/entry.txt", 0o644);
+} catch {
+  // Leave the file with the mode writeFileSync gave it.
+}
